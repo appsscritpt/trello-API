@@ -1,18 +1,36 @@
-var data =[]
 
+  var TrelloKey = "TRELLO KEY"
+  var TrelloToken = "TRELLO TOKEN"
+  var TrelloList =  "LIST_ID"
+function getAllCards(data,cardName) {
+  //cardName = 'new trigger'
+  var url = "https://api.trello.com/1/lists/" + TrelloList + "/cards/?key=" + 
+  TrelloKey + "&token=" + TrelloToken + "";
+   var options = {"method" : "get"}
+    var response = UrlFetchApp.fetch(url, options);
+    var responseJson = JSON.parse(response);
+    for(var i = 0; i < responseJson.length;i++) {
+      if(responseJson[i].name == cardName) {
+         var card_id = responseJson[i].id
+         //Logger.log(responseJson[i].id)
+         var res = updateTrelloCard(data, card_id)
+         return res
+      }
+    }
+     
+    return 'missed'
+ }
 
 
 
 function updateTrelloCard(data,cardId) {
-  var TrelloKey = "TRELLO KEY"
-  var TrelloToken = "TRELLO TOKEN"
-  var TrelloList =  "LIST_ID"
+
+  
   //ObjectIDs for Trello labels in JS variables
   var labels = [];
   var label1 = 'help!';
   var ownerName = data[1]
   var cardName = data[0]
-  // CARD DESC IS A STRING YOU CAN BUILD THE WAY YOU LIKE
   var cardDesc = "Contact Info\n==========\n" 
   +"**Owner Name and Surname:** " + data[1] 
   + "\n**Owner Phone Number:** "+ data[2] 
@@ -24,7 +42,8 @@ function updateTrelloCard(data,cardId) {
  "\n\nDesign Information\n================\n" +
  "\n**Rooms to Stage:** "+data[8]+
  "\n**Budget:** "+data[9] +
- "\n**Stage Date:** "+data[10]+
+ "\n**Stage Date:** "+
+ Utilities.formatDate(new Date(data[10]),Session.getTimeZone(), 'MM/DD/YYYY') +
  "\n**Project Type:** "+data[11]+
  "\n**Design Style:** "+ data[12]+
  "\n**Design Notes:** "+ data[13] + 
@@ -37,7 +56,7 @@ function updateTrelloCard(data,cardId) {
 //Make comma separated list from labels
 labels.join(",");
 var dt =  new Date(data[10])
-dt.setHours(8,0,0)
+dt.setHours(7,0,0)
 //Send POST payload data via Trello API
 //POST [/1/cards], Required permissions: write
   var payload = {"name":cardName,
@@ -49,12 +68,13 @@ dt.setHours(8,0,0)
 
    //Because payload is a JavaScript object, it will be interpreted as an HTML form
    try {
-   var url = "https://api.trello.com/1/cards/" + cardId + "?key=" + TrelloKey + "&token=" + TrelloToken + ""
+   var url = "https://api.trello.com/1/cards/" + cardId + "?key=" + TrelloKey + "&token=" 
+   + TrelloToken + ""
   var options = {"method" : "PUT", "payload" : payload}
   var response = UrlFetchApp.fetch(url, options)
   var responseJson = JSON.parse(response)
   var cardID = responseJson.id
-  return "OK"
+  return "updated"
    } catch (er) {
      return "Error"
    }
@@ -63,19 +83,19 @@ dt.setHours(8,0,0)
 
 
 function createTrelloCard(data) {
-
+Logger.log(data)
 //CONFIG VARIABLES TO EDIT
   //Trello app key
   //Go to https://trello.com/1/appKey/generate to generate key
   //Key to Trello app - SPECIFIC TO YOUR ACCOUNT
-    var TrelloKey = "TRELLO KEY"
+
   //Trello app token
-  //Go to https://trello.com/1/connect?key=TrelloKey&name=YOUR_TRELLO_APP_NAME&response_type=token&scope=read,write to generate token
-  var TrelloToken = "TRELLO TOKEN"
+  //Go to https://trello.com/1/connect?key=<kEY>&name=<TRELLO APP NAME>&response_type=token&scope=read,write to generate token
+
   //Token for authorization - SPECIFIC TO YOUR ACCOUNT
 
   //ObjectID for Trello List that you want cards to be added to
-  var TrelloList =  "LIST_ID"
+
   //ObjectIDs for Trello labels in JS variables
   var labels = [];
   var label1 = 'help!';
@@ -111,7 +131,8 @@ function createTrelloCard(data) {
  "\n\nDesign Information\n================\n" +
  "\n**Rooms to Stage:** "+data[8]+
  "\n**Budget:** "+data[9] +
- "\n**Stage Date:** "+data[10]+
+ "\n**Stage Date:** "+
+ Utilities.formatDate(new Date(data[10]),Session.getTimeZone(), 'MM/DD/YYYY')+
  "\n**Project Type:** "+data[11]+
  "\n**Design Style:** "+ data[12]+
  "\n**Design Notes:** "+ data[13] + 
@@ -133,7 +154,7 @@ function createTrelloCard(data) {
 //Make comma separated list from labels
   labels.join(",");
 var dt =  new Date(data[10])
-dt.setHours(8,0,0)
+dt.setHours(7,0,0)
 //Send POST payload data via Trello API
 //POST [/1/cards], Required permissions: write
   var payload = {"name":cardName,
@@ -151,41 +172,24 @@ dt.setHours(8,0,0)
           var response = UrlFetchApp.fetch(url, options);
           var responseJson = JSON.parse(response);
           var cardID = responseJson.id
-          return cardID
+          return 'created'
    } catch(er) {
-      return err.descripiton
+      return er.descripiton
   }
  }
- function getAllCards(data,cardName) {
-  var TrelloKey = "TRELLO KEY"
-  var TrelloToken = "TRELLO TOKEN"
-  var TrelloList =  "LIST_ID"
-  var url = "https://api.trello.com/1/lists/" + TrelloList + "/cards/?key=" + TrelloKey + "&token=" + TrelloToken + "";
+function getTrelloCard(data) {
+
+  var url = "https://api.trello.com/1/cards/<CARD id>?key=" + 
+  TrelloKey + "&token=" + TrelloToken + "";
    var options = {"method" : "get"}
     var response = UrlFetchApp.fetch(url, options);
     var responseJson = JSON.parse(response);
-    for(var i = 0; i < responseJson.length;i++) {
-    //SEARCH THE WANTED CARD BY NAME AND RETURN ITS iD
-      if(responseJson[i].name == cardName) {
-         var card_id = responseJson[i].id
-         var res = updateTrelloCard(data, card_id)
-         return res
-      }
-    }
-    // 
-    return false
+    Logger.log(responseJson)
+    var docLink = responseJson.id
+    return docLink
  }
 
 
 
-////////////////////////////////////////////////////////
-function getAllLabels() {
-    var TrelloKey = "TRELLO KEY"
-    var TrelloToken = "TRELLO TOKEN"
-    var TrelloList =  "LIST_ID"
-    var options = {"method" : "get", "Label" : "id,name"}
-    var url="https://api.trello.com/1/boards/5fa17ee8cbe8746d4304114d/labels?key="+TrelloKey+"&token="+TrelloToken+""
-    var response = UrlFetchApp.fetch(url, options)
-    var responseJson = JSON.parse(response)
-    Logger.log(responseJson)
-}
+
+/////////////////////////////////////////
