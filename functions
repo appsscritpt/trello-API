@@ -27,8 +27,8 @@ function updateTrelloCard(data,cardId) {
 
   
   //ObjectIDs for Trello labels in JS variables
-  var labels = [];
-  var label1 = 'help!';
+  var labels = 'labelid1,labelid2....';
+ 
   var ownerName = data[1]
   var cardName = data[0]
   var cardDesc = "Contact Info\n==========\n" 
@@ -49,12 +49,12 @@ function updateTrelloCard(data,cardId) {
  "\n**Design Notes:** "+ data[13] + 
  "\n**Furniture Amendments:** "+ data[14] +
  "\n**Access Info:** " + data[15] 
-   labels.push(label1); 
+ 
 //*****************************************************
 //****** DO NOT CHANGE ANYTHING BELOW THIS LINE *******
 //*****************************************************
 //Make comma separated list from labels
-labels.join(",");
+
 var dt =  new Date(data[10])
 dt.setHours(7,0,0)
 //Send POST payload data via Trello API
@@ -64,6 +64,7 @@ dt.setHours(7,0,0)
                   "pos":"top",
                   "due": dt , //(required) A date, or null
                   "idList":TrelloList, 
+                  "idLabels": labels
                 };
 
    //Because payload is a JavaScript object, it will be interpreted as an HTML form
