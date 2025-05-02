@@ -189,8 +189,102 @@ function getTrelloCard(data) {
     var docLink = responseJson.id
     return docLink
  }
-
-
-
-
 /////////////////////////////////////////
+function insertAttachment(cardId,furl,linkText) {
+   try {
+      var payload = {
+        "name" : linkText, //"QBO invoice Link",
+        "url" : furl
+      }
+      var url = "https://api.trello.com/1/cards/"+cardId+"/attachments?key="+TrelloKey + "&token=" + TrelloToken + ""
+      var options = {
+        "method" : "POST", 
+        "payload" : payload
+      }
+      var response = UrlFetchApp.fetch(url, options)
+      return "attached"
+   } catch (er) {
+      return "Error"
+   }
+}
+function moveCard(cardID) {
+
+ var cardList = 'cardID' 
+ try {
+   var url="https://api.trello.com/1/cards/"+cardID+"?idList="+cardList+"&key="+TrelloKey+"&token="+TrelloToken+""
+   var options = {"method" : "put"}
+    var response = UrlFetchApp.fetch(url, options)
+    var responseJson = JSON.parse(response)
+  } catch(er) {
+    return 'error'
+  }
+}
+function insertLabel(cardID,payload) {  
+  try {
+    var options = {
+      "method" : "post",
+      "payload" : payload
+    }
+    var url ="https://api.trello.com/1/cards/" + cardID + "/idLabels/?key=" + TrelloKey + "&token=" + TrelloToken + ""
+    var response = UrlFetchApp.fetch(url, options)
+    var responseJson = JSON.parse(response)
+  } catch(er) {
+     ss.appendRow([new Date(),'add label ERROR',er.toString()])
+  }
+}
+function getCardLabels(cardID,cardName) {
+   try {
+      var url = "https://api.trello.com/1/boards/"+RSSAccounting+"/cards?key="+TrelloKey+"&token="+TrelloToken +""
+      var options = {"method" : "GET",
+        "Label" : "id,name"}
+      var response = UrlFetchApp.fetch(url, options);
+      var responseJson = JSON.parse(response);
+      for(var i = 0; i < responseJson.length;i++) {
+          if(responseJson[i].name == cardName) {
+            var labels = responseJson[i].labels
+      }
+    }
+    var lblStr = ''
+     labels.forEach(lbl => {
+          lblStr += lbl.id + ','
+     })
+      var labelsList = ['5fa17e8ee6ab5940a9a734f8'] //bid signed
+      labelsList.forEach(label => {
+               if (lblStr.includes(label) == false) {
+                  var payload = {
+                    "value" : label
+                  }
+                  insertLabel(cardID,payload)
+               }  
+      })
+    } catch(er) {
+     ss.appendRow([new Date(),'get card labels ERROR',er.toString()])
+  }
+    
+}
+
+function getTrelloLists() {
+      var url="https://api.trello.com/1/boards/" + RSSAccounting +"/lists?key=" + TrelloKey + "&token=" + TrelloToken + ""
+      var options = {"method" : "get"}
+      var response = UrlFetchApp.fetch(url, options);
+      var responseJson = JSON.parse(response);
+      for(var i = 0; i < responseJson.length;i++) {
+            var card_id = responseJson[i].id
+            var cardName =responseJson[i].name
+            Logger.log("id:%s, list:%s",card_id,cardName)
+    }
+     
+    return false
+ }
+
+ function getTrelloLabels() {
+   var url = "https://api.trello.com/1/boards/"+RSSAccounting+"/labels?key="+TrelloKey+"&token="+TrelloToken +""
+              var options = {"method" : "GET",
+                "Label" : "id,name"}
+              var response = UrlFetchApp.fetch(url, options);
+              var responseJson = JSON.parse(response);
+              for(var i = 0; i < responseJson.length;i++) {
+                    var labels = responseJson[i]
+                     Logger.log("id:%s, list:%s",responseJson[i].id,responseJson[i].name)
+              } 
+ }
